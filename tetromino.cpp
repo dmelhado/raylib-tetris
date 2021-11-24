@@ -61,6 +61,11 @@ tetromino::tetromino(Shape shape, const vector<vector<int>>& playfield) {
             _xPos = 4;
             _yPos = -1;
             break;
+        case N:
+            _box = {};
+            _xPos = 0;
+            _yPos = 0;
+            break;
     }
 }
 

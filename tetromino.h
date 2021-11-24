@@ -8,7 +8,7 @@
 #include "vector"
 #include "tuple"
 
-enum Shape{I,O,T,J,L,S,Z};
+enum Shape{N,I,O,T,J,L,S,Z};
 enum Movement{LEFT,RIGHT,DOWN};
 
 using namespace std;
@@ -25,7 +25,6 @@ private:
     bool _validPiece(vector<vector<int>> &piece, int xPos, int yPos);
     static vector<pair<int,int>> _calculateCoordinates(int xPos, int yPos, vector<vector<int>> &piece);
     vector<vector<int>> _giveRotation();
-
 
     int _xPos;
     int _yPos;
