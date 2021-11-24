@@ -1,6 +1,10 @@
 #include <raylib.h>
+#include <random>
 #include <tuple>
 #include <vector>
+#include <list>
+#include <random>
+#include <algorithm>
 
 #include "tetromino.h"
 
@@ -36,9 +40,21 @@ int main() {
     vector<vector<int>> playfield(boardWidth,vector<int>(boardHeight,0));
 
     //For many things, it will be convenient to treat the piece type as a number
-    int pieceNumber = GetRandomValue(1, 7);
+    //int pieceNumber = GetRandomValue(1, 7);
 
-    tetromino movingPiece(Shape(pieceNumber), playfield);
+    //random set of next pieces
+    vector<int> setA = {};
+
+    for(int i = 1; i <= 7; i++){
+        setA.push_back(i);
+    }
+
+    shuffle(setA.begin(),setA.end(), std::mt19937(std::random_device()()));
+
+    int currentShapeIndex = 0;
+    int nextShapeIndex = 1;
+
+    tetromino movingPiece(Shape(setA[currentShapeIndex]), playfield);
 
     bool gameOver = false;
 
@@ -83,7 +99,7 @@ int main() {
                     //this guard does almost everything
                     //set every block to the board
                     for(auto & coord : coordinates){
-                        playfield[coord.first][coord.second] = pieceNumber;
+                        playfield[coord.first][coord.second] = setA[currentShapeIndex];
                     }
                     //check complete lines
                     int completeLines = 0;
@@ -103,8 +119,15 @@ int main() {
                     }
                     //prepare a new moving piece
                     movingPiece.~tetromino();
-                    pieceNumber = GetRandomValue(1, 7);
-                    new(&movingPiece) tetromino(Shape(pieceNumber), playfield);
+                    currentShapeIndex = nextShapeIndex;
+                    nextShapeIndex++;
+                    if(nextShapeIndex > 6){
+                        //generate a new random set
+                        random_shuffle(setA.begin(),setA.end());
+                        nextShapeIndex = 0;
+                    }
+
+                    new(&movingPiece) tetromino(Shape(setA[currentShapeIndex]), playfield);
                     //check if new piece is overlapping and set game over
                     coordinates = movingPiece.publishCoordinates();
                     for(auto & coord : coordinates){
@@ -128,7 +151,7 @@ int main() {
         }
         //demo piece
         for(auto &coordinate : movingPiece.publishCoordinates()){
-            renderSquare(coordinate, ColorTable[pieceNumber]);
+            renderSquare(coordinate, ColorTable[setA[currentShapeIndex]]);
         }
         EndDrawing();
         tickTime -= GetFrameTime();
