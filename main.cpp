@@ -1,9 +1,6 @@
 #include <raylib.h>
 #include <random>
-#include <tuple>
 #include <vector>
-#include <list>
-#include <random>
 #include <algorithm>
 
 #include "tetromino.h"
