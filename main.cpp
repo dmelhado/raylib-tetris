@@ -7,20 +7,20 @@
 
 using namespace std;
 
-vector<Color> ColorTable = {{ 15, 15, 15,255} , RED, YELLOW, ORANGE, BLUE, GREEN, {0,255,255,255}, MAGENTA};
+vector<Color> ColorTable = {{15, 15, 15, 255}, RED, YELLOW, ORANGE, BLUE, GREEN, {0, 255, 255, 255}, MAGENTA};
 
 void renderSquare(pair<int, int> position, Color color) {
     DrawRectangle(10 + position.first * 25, 10 + position.second * 25, 20, 20, color);
 }
 
-void eraseLine(vector<vector<int>> &playfield, int line){
-    for(int j = line; j > 0; j--){
-        for(int i = 0; i < playfield.size(); i++){
-            playfield[i][j] = playfield[i][j - 1];
+void eraseLine(vector<vector<int>> &playfield, int line) {
+    for (int j = line; j > 0; j--) {
+        for (auto &i: playfield) {
+            i[j] = i[j - 1];
         }
     }
-    for(int i = 0; i < playfield.size(); i++){
-        playfield[i][0] = 0;
+    for (auto &i: playfield) {
+        i[0] = 0;
     }
 }
 
@@ -57,93 +57,91 @@ int main() {
 
     bool gameOver = false;
 
-    vector<vector<int>> playfield(boardWidth,vector<int>(boardHeight,0));
+    vector<vector<int>> playfield(boardWidth, vector<int>(boardHeight, 0));
 
     //player variables
 
-    int currentShape = GetRandomValue(1,7);
-    int nextShape = GetRandomValue(1,7);
+    int currentShape = GetRandomValue(1, 7);
+    int nextShape = GetRandomValue(1, 7);
 
     tetromino movingPiece(Shape(currentShape), playfield);
 
-    while (!WindowShouldClose()){
+    while (!WindowShouldClose()) {
 
-        if(!gameOver){
+        if (!gameOver) {
 
-            if(IsKeyDown(KEY_DOWN)){
-                if(DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0){
+            if (IsKeyDown(KEY_DOWN)) {
+                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0) {
                     movingPiece.move(DOWN);
                 }
                 DAS_Counter++;
             }
-            if(IsKeyDown(KEY_LEFT)){
-                if(DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0){
+            if (IsKeyDown(KEY_LEFT)) {
+                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0) {
                     movingPiece.move(LEFT);
                 }
                 DAS_Counter++;
             }
-            if(IsKeyDown(KEY_RIGHT)){
-                if(DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0){
+            if (IsKeyDown(KEY_RIGHT)) {
+                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0) {
                     movingPiece.move(RIGHT);
                 }
                 DAS_Counter++;
             }
-            if(IsKeyPressed(KEY_UP)){
+            if (IsKeyPressed(KEY_UP)) {
                 //hard drop
-                for(int i = 0; i < 20; i++){
+                for (int i = 0; i < 20; i++) {
                     movingPiece.move(DOWN);
                 }
                 tickTime = 0;
             }
-            if(IsKeyPressed(KEY_Z)){
+            if (IsKeyPressed(KEY_Z)) {
                 movingPiece.rotate(1);
             }
-            if(IsKeyPressed(KEY_X)){
+            if (IsKeyPressed(KEY_X)) {
                 movingPiece.rotate(-1);
             }
 
-            if(IsKeyUp(KEY_LEFT) && IsKeyUp(KEY_RIGHT) && IsKeyUp(KEY_DOWN)){
+            if (IsKeyUp(KEY_LEFT) && IsKeyUp(KEY_RIGHT) && IsKeyUp(KEY_DOWN)) {
                 DAS_Counter = 0;
             }
 
-            if(tickTime < 0){
+            if (tickTime < 0) {
                 //check if can't move anymore
                 bool setPiece = false;
-                vector<pair<int,int>> coordinates = movingPiece.publishCoordinates();
-                for(auto & coord : coordinates){
+                vector<pair<int, int>> coordinates = movingPiece.publishCoordinates();
+                for (auto &coord: coordinates) {
                     //is on floor
-                    if(coord.second + 1 >= boardHeight){
+                    if (coord.second + 1 >= boardHeight) {
                         setPiece = true;
                         break;
                     }
                     //has a placed block below
-                    if(playfield[coord.first][coord.second + 1] != 0){
+                    if (playfield[coord.first][coord.second + 1] != 0) {
                         setPiece = true;
                         break;
                     }
                 }
-                if(!setPiece){
+                if (!setPiece) {
                     movingPiece.move(DOWN);
-                }
-                else{
+                } else {
                     //this guard does almost everything
                     //set every block to the board
-                    for(auto & coord : coordinates){
+                    for (auto &coord: coordinates) {
                         playfield[coord.first][coord.second] = currentShape;
                     }
                     //check complete lines
                     int completeLines = 0;
                     int j = boardHeight - 1;
-                    while(j >= 0){
+                    while (j >= 0) {
                         int sum = 0;
-                        for(int i = 0; i < boardWidth; i++){
+                        for (int i = 0; i < boardWidth; i++) {
                             sum += (playfield[i][j] > 0);
                         }
-                        if(sum == boardWidth){
+                        if (sum == boardWidth) {
                             completeLines++;
                             eraseLine(playfield, j);
-                        }
-                        else{
+                        } else {
                             j--;
                         }
                     }
@@ -170,44 +168,42 @@ int main() {
                             break;
                     }
                     //set level and speed
-                    if(completeLines != 0){
+                    if (completeLines != 0) {
                         level = lines / 10;
-                        framesPerLine = max(48 - int(31 * log(level + 1 ) / log(16)),1);
+                        framesPerLine = max(-int(22 * cbrt(level + 1)) + 69, 1);
                         ticksPerSecond = double(gameFps) / double(framesPerLine);
                     }
 
                     //prepare a new moving piece
                     movingPiece.~tetromino();
                     currentShape = nextShape;
-                    nextShape = GetRandomValue(1,7);
+                    nextShape = GetRandomValue(1, 7);
 
                     new(&movingPiece) tetromino(Shape(currentShape), playfield);
                     //check if new piece is overlapping and set game over
                     coordinates = movingPiece.publishCoordinates();
-                    for(auto & coord : coordinates){
-                        if(playfield[coord.first][coord.second] != 0){
+                    for (auto &coord: coordinates) {
+                        if (playfield[coord.first][coord.second] != 0) {
                             gameOver = true;
-                        };
+                        }
                     }
                 }
                 tickTime = 1 / ticksPerSecond;
             }
         }
 
-
-
         //render everything
         BeginDrawing();
         ClearBackground(BLACK);
         //background board
-        for(int i = 0; i < boardWidth; i++){
-            for(int j = 0; j < boardHeight; j++){
-                renderSquare(make_pair(i,j), ColorTable[playfield[i][j]]);
+        for (int i = 0; i < boardWidth; i++) {
+            for (int j = 0; j < boardHeight; j++) {
+                renderSquare(make_pair(i, j), ColorTable[playfield[i][j]]);
             }
         }
         //moving piece
-        for(auto &coordinate : movingPiece.publishCoordinates()){
-            if(coordinate.second >= 0){
+        for (auto &coordinate: movingPiece.publishCoordinates()) {
+            if (coordinate.second >= 0) {
                 renderSquare(coordinate, ColorTable[currentShape]);
             }
         }
@@ -228,61 +224,62 @@ int main() {
 
 
         //draw next piece
-        if(!gameOver){
+        if (!gameOver) {
             DrawText("NEXT", 270, 370, 40, WHITE);
-            switch(nextShape){
+            switch (nextShape) {
                 //I
                 case 1:
-                    renderSquare(make_pair(11,17),ColorTable[1]);
-                    renderSquare(make_pair(12,17),ColorTable[1]);
-                    renderSquare(make_pair(13,17),ColorTable[1]);
-                    renderSquare(make_pair(14,17),ColorTable[1]);
+                    renderSquare(make_pair(11, 17), ColorTable[1]);
+                    renderSquare(make_pair(12, 17), ColorTable[1]);
+                    renderSquare(make_pair(13, 17), ColorTable[1]);
+                    renderSquare(make_pair(14, 17), ColorTable[1]);
                     break;
                     //O
                 case 2:
-                    renderSquare(make_pair(11,17),ColorTable[2]);
-                    renderSquare(make_pair(12,17),ColorTable[2]);
-                    renderSquare(make_pair(11,18),ColorTable[2]);
-                    renderSquare(make_pair(12,18),ColorTable[2]);
+                    renderSquare(make_pair(11, 17), ColorTable[2]);
+                    renderSquare(make_pair(12, 17), ColorTable[2]);
+                    renderSquare(make_pair(11, 18), ColorTable[2]);
+                    renderSquare(make_pair(12, 18), ColorTable[2]);
                     break;
                     //T
                 case 3:
-                    renderSquare(make_pair(11,17),ColorTable[3]);
-                    renderSquare(make_pair(12,17),ColorTable[3]);
-                    renderSquare(make_pair(13,17),ColorTable[3]);
-                    renderSquare(make_pair(12,18),ColorTable[3]);
+                    renderSquare(make_pair(11, 17), ColorTable[3]);
+                    renderSquare(make_pair(12, 17), ColorTable[3]);
+                    renderSquare(make_pair(13, 17), ColorTable[3]);
+                    renderSquare(make_pair(12, 18), ColorTable[3]);
                     break;
                     //J
                 case 4:
-                    renderSquare(make_pair(11,17),ColorTable[4]);
-                    renderSquare(make_pair(11,18),ColorTable[4]);
-                    renderSquare(make_pair(12,18),ColorTable[4]);
-                    renderSquare(make_pair(13,18),ColorTable[4]);
+                    renderSquare(make_pair(11, 17), ColorTable[4]);
+                    renderSquare(make_pair(11, 18), ColorTable[4]);
+                    renderSquare(make_pair(12, 18), ColorTable[4]);
+                    renderSquare(make_pair(13, 18), ColorTable[4]);
                     break;
                     //L
                 case 5:
-                    renderSquare(make_pair(13,17),ColorTable[5]);
-                    renderSquare(make_pair(11,18),ColorTable[5]);
-                    renderSquare(make_pair(12,18),ColorTable[5]);
-                    renderSquare(make_pair(13,18),ColorTable[5]);
+                    renderSquare(make_pair(13, 17), ColorTable[5]);
+                    renderSquare(make_pair(11, 18), ColorTable[5]);
+                    renderSquare(make_pair(12, 18), ColorTable[5]);
+                    renderSquare(make_pair(13, 18), ColorTable[5]);
                     break;
                     //S
                 case 6:
-                    renderSquare(make_pair(12,17),ColorTable[6]);
-                    renderSquare(make_pair(13,17),ColorTable[6]);
-                    renderSquare(make_pair(11,18),ColorTable[6]);
-                    renderSquare(make_pair(12,18),ColorTable[6]);
+                    renderSquare(make_pair(12, 17), ColorTable[6]);
+                    renderSquare(make_pair(13, 17), ColorTable[6]);
+                    renderSquare(make_pair(11, 18), ColorTable[6]);
+                    renderSquare(make_pair(12, 18), ColorTable[6]);
                     break;
                 case 7:
-                    renderSquare(make_pair(11,17),ColorTable[7]);
-                    renderSquare(make_pair(12,17),ColorTable[7]);
-                    renderSquare(make_pair(12,18),ColorTable[7]);
-                    renderSquare(make_pair(13,18),ColorTable[7]);
+                    renderSquare(make_pair(11, 17), ColorTable[7]);
+                    renderSquare(make_pair(12, 17), ColorTable[7]);
+                    renderSquare(make_pair(12, 18), ColorTable[7]);
+                    renderSquare(make_pair(13, 18), ColorTable[7]);
+                    break;
+                default:
                     break;
 
             }
-        }
-        else{
+        } else {
             DrawText("GAME\nOVER", 270, 370, 40, WHITE);
         }
 

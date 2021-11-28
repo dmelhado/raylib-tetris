@@ -11,16 +11,16 @@ using namespace std;
 //constructor
 tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
     playfieldReference = playfield;
-    _rotation = 0;
+    _currentRotation = 0;
     switch (shape) {
         case I:
-            _pieceRotations = 2;
-            _Piece = {  {{0, 1, 0, 0},
+            _maxRotations = 2;
+            _rotationsList = {{{0, 1, 0, 0},
                          {0, 1, 0, 0},
                          {0, 1, 0, 0},
                          {0, 1, 0, 0}
                         },
-                        {{0, 0, 0, 0},
+                              {{0, 0, 0, 0},
                          {0, 0, 0, 0},
                          {1, 1, 1, 1},
                          {0, 0, 0, 0}
@@ -30,29 +30,29 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
             _yPos = -1;
             break;
         case O:
-            _pieceRotations = 1;
-            _Piece = {  {{1, 1},
-                         {1, 1}
+            _maxRotations = 1;
+            _rotationsList = {{{1, 1},
+                               {1, 1}
                         }
                      };
             _xPos = 4;
             _yPos = 0;
             break;
         case T:
-            _pieceRotations = 4;
-            _Piece = {  {{0, 1, 0},
+            _maxRotations = 4;
+            _rotationsList = {{{0, 1, 0},
                          {0, 1, 1},
                          {0, 1, 0}
                         },
-                        {{0, 1, 0},
+                              {{0, 1, 0},
                          {1, 1, 1},
                          {0, 0, 0}
                         },
-                        {{0, 1, 0},
+                              {{0, 1, 0},
                          {1, 1, 0},
                          {0, 1, 0}
                         },
-                        {{0, 0, 0},
+                              {{0, 0, 0},
                          {1, 1, 1},
                          {0, 1, 0}
                         }
@@ -61,20 +61,20 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
             _yPos = -1;
             break;
         case J:
-            _pieceRotations = 4;
-            _Piece = {  {{0, 1, 0},
+            _maxRotations = 4;
+            _rotationsList = {{{0, 1, 0},
                          {0, 1, 0},
                          {0, 1, 1}
                         },
-                        {{0, 0, 1},
+                              {{0, 0, 1},
                          {1, 1, 1},
                          {0, 0, 0}
                         },
-                        {{1, 1, 0},
+                              {{1, 1, 0},
                          {0, 1, 0},
                          {0, 1, 0}
                         },
-                        {{0, 0, 0},
+                              {{0, 0, 0},
                          {1, 1, 1},
                          {1, 0, 0}
                         },
@@ -84,20 +84,20 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
 
             break;
         case L:
-            _pieceRotations = 4;
-            _Piece = {  {{0, 1, 1},
+            _maxRotations = 4;
+            _rotationsList = {{{0, 1, 1},
                          {0, 1, 0},
                          {0, 1, 0}
                         },
-                        {{1, 0, 0},
+                              {{1, 0, 0},
                          {1, 1, 1},
                          {0, 0, 0}
                         },
-                        {{0, 1, 0},
+                              {{0, 1, 0},
                          {0, 1, 0},
                          {1, 1, 0}
                         },
-                        {{0, 0, 0},
+                              {{0, 0, 0},
                          {1, 1, 1},
                          {0, 0, 1}
                         },
@@ -106,12 +106,12 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
             _yPos = -1;
             break;
         case S:
-            _pieceRotations = 2;
-            _Piece = {  {{0, 0, 1},
+            _maxRotations = 2;
+            _rotationsList = {{{0, 0, 1},
                          {0, 1, 1},
                          {0, 1, 0}
                         },
-                        {{1, 1, 0},
+                              {{1, 1, 0},
                          {0, 1, 1},
                          {0, 0, 0}
                         },
@@ -120,12 +120,12 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
             _yPos = -1;
             break;
         case Z:
-            _pieceRotations = 2;
-            _Piece = {  {{0, 1, 0},
+            _maxRotations = 2;
+            _rotationsList = {{{0, 1, 0},
                          {0, 1, 1},
                          {0, 0, 1}
                         },
-                        {{0, 0, 0},
+                              {{0, 0, 0},
                          {0, 1, 1},
                          {1, 1, 0}
                         },
@@ -134,7 +134,7 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
             _yPos = -1;
             break;
         case N:
-            _Piece = {};
+            _rotationsList = {};
             _xPos = 0;
             _yPos = 0;
             break;
@@ -159,29 +159,29 @@ void tetromino::move(Movement mov) {
             futureYPos++;
             break;
     }
-    if (_validPiece(_rotation, futureXPos, futureYPos)) {
+    if (_validPiece(_currentRotation, futureXPos, futureYPos)) {
         _xPos = futureXPos;
         _yPos = futureYPos;
     }
 }
 
 void tetromino::rotate(int spin) {
-    int futureRotation = _rotation + spin;
+    int futureRotation = _currentRotation + spin;
     if( futureRotation == -1){
-        futureRotation = _pieceRotations - 1;
+        futureRotation = _maxRotations - 1;
     }
-    if( futureRotation == _pieceRotations){
+    if(futureRotation == _maxRotations){
         futureRotation = 0;
     }
     if (_validPiece(futureRotation, _xPos, _yPos)) {
-        _rotation = futureRotation;
+        _currentRotation = futureRotation;
     }
 }
 
 //used to check if every (future) piece block is ok
 bool tetromino::_validPiece(int rotationPos, int xPos, int yPos) {
     bool res = true;
-    vector<pair<int, int>> coordinates = tetromino::_calculateCoordinates(xPos, yPos, _Piece[rotationPos]);
+    vector<pair<int, int>> coordinates = tetromino::_calculateCoordinates(xPos, yPos, _rotationsList[rotationPos]);
 
     for (auto &coordinate: coordinates) {
         int cX = coordinate.first;
@@ -219,6 +219,6 @@ vector<pair<int, int>> tetromino::_calculateCoordinates(int xPos, int yPos, vect
 }
 
 vector<pair<int, int>> tetromino::publishCoordinates() {
-    return _calculateCoordinates(_xPos, _yPos, _Piece[_rotation]);
+    return _calculateCoordinates(_xPos, _yPos, _rotationsList[_currentRotation]);
 }
 

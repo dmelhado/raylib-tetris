@@ -27,9 +27,9 @@ private:
 
     int _xPos;
     int _yPos;
-    vector<vector<vector<int>>> _Piece;
-    int _rotation;
-    int _pieceRotations;
+    vector<vector<vector<int>>> _rotationsList;
+    int _currentRotation;
+    int _maxRotations;
     vector<vector<int>> playfieldReference;
 
 };
