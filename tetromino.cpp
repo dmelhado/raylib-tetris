@@ -190,10 +190,6 @@ bool tetromino::_validPiece(int rotationPos, int xPos, int yPos) {
             res = false;
             break;
         }
-        if (cY < 0 || cY >= playfieldReference[0].size()) {
-            res = false;
-            break;
-        }
         //doesn't overlap a board placed block
         if (playfieldReference[cX][cY] != 0) {
             res = false;

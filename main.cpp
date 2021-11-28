@@ -38,16 +38,17 @@ int main() {
 
     int framesPerLine = 48;
 
-    double ticksPerSecond = gameFps / framesPerLine;
+    double ticksPerSecond = double(gameFps) / double(framesPerLine);
     double tickTime = 1 / ticksPerSecond;
 
     //delayed auto shift
     int DAS_Counter = 0;
 
     //gameplay variables
-    int level = 1;
+    int level = 0;
     int score = 0;
 
+    int lines = 0;
     int singles = 0;
     int doubles = 0;
     int triples = 0;
@@ -146,28 +147,32 @@ int main() {
                             j--;
                         }
                     }
+                    lines += completeLines;
                     //score points!!
                     switch (completeLines) {
                         default:
                             break;
                         case 1:
-                            score += 100 * level;
+                            score += 40 * (level + 1);
                             singles++;
                             break;
                         case 2:
-                            score += 200 * level;
+                            score += 100 * (level + 1);
                             doubles++;
                             break;
                         case 3:
-                            score += 400 * level;
+                            score += 300 * (level + 1);
                             triples++;
                             break;
                         case 4:
-                            score += 800 * level;
+                            score += 1200 * (level + 1);
                             tetris++;
                             break;
-
                     }
+                    //set level and speed
+                    level = lines / 10;
+                    framesPerLine = 48 - int(31 * log(level + 1 ) / log(16));
+                    ticksPerSecond = double(gameFps) / double(framesPerLine);
 
                     //prepare a new moving piece
                     movingPiece.~tetromino();
@@ -187,6 +192,8 @@ int main() {
             }
         }
 
+
+
         //render everything
         BeginDrawing();
         ClearBackground(BLACK);
@@ -198,14 +205,16 @@ int main() {
         }
         //moving piece
         for(auto &coordinate : movingPiece.publishCoordinates()){
-            renderSquare(coordinate, ColorTable[currentShape]);
+            if(coordinate.second >= 0){
+                renderSquare(coordinate, ColorTable[currentShape]);
+            }
         }
         DrawText("SCORE", 325, 15, 20, WHITE);
         DrawText(to_string(score).c_str(), 270, 40, 30, WHITE);
         DrawText("LEVEL", 325, 80, 20, WHITE);
         DrawText(to_string(level).c_str(), 270, 105, 30, WHITE);
         DrawText("LINES", 325, 145, 20, WHITE);
-        DrawText(to_string(singles + doubles + triples + tetris).c_str(), 270, 170, 30, WHITE);
+        DrawText(to_string(lines).c_str(), 270, 170, 30, WHITE);
         DrawText("x1:", 270, 220, 20, WHITE);
         DrawText(to_string(singles).c_str(), 310, 220, 20, WHITE);
         DrawText("x2:", 270, 250, 20, WHITE);
@@ -272,11 +281,8 @@ int main() {
             }
         }
         else{
-            DrawText("GAME", 270, 370, 40, WHITE);
-            DrawText("OVER", 270, 420, 40, WHITE);
+            DrawText("GAME\nOVER", 270, 370, 40, WHITE);
         }
-
-
 
         EndDrawing();
         tickTime -= GetFrameTime();
