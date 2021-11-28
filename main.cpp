@@ -59,20 +59,11 @@ int main() {
     vector<vector<int>> playfield(boardWidth,vector<int>(boardHeight,0));
 
     //player variables
-    //For many things, it will be convenient to treat the piece type as a number
-    //random bag of next pieces
-    vector<int> pieceBag = {};
 
-    for(int i = 1; i <= 7; i++){
-        pieceBag.push_back(i);
-    }
+    int currentShape = GetRandomValue(1,7);
+    int nextShape = GetRandomValue(1,7);
 
-    shuffle(pieceBag.begin(), pieceBag.end(), std::mt19937(std::random_device()()));
-
-    int currentShapeIndex = 0;
-    int nextShapeIndex = 1;
-
-    tetromino movingPiece(Shape(pieceBag[currentShapeIndex]), playfield);
+    tetromino movingPiece(Shape(currentShape), playfield);
 
     while (!WindowShouldClose()){
 
@@ -101,6 +92,7 @@ int main() {
                 for(int i = 0; i < 20; i++){
                     movingPiece.move(DOWN);
                 }
+                tickTime = 0;
             }
             if(IsKeyPressed(KEY_Z)){
                 movingPiece.rotate(1);
@@ -136,7 +128,7 @@ int main() {
                     //this guard does almost everything
                     //set every block to the board
                     for(auto & coord : coordinates){
-                        playfield[coord.first][coord.second] = pieceBag[currentShapeIndex];
+                        playfield[coord.first][coord.second] = currentShape;
                     }
                     //check complete lines
                     int completeLines = 0;
@@ -160,30 +152,29 @@ int main() {
                             break;
                         case 1:
                             score += 100 * level;
+                            singles++;
                             break;
                         case 2:
                             score += 200 * level;
+                            doubles++;
                             break;
                         case 3:
                             score += 400 * level;
+                            triples++;
                             break;
                         case 4:
                             score += 800 * level;
+                            tetris++;
                             break;
 
                     }
 
                     //prepare a new moving piece
                     movingPiece.~tetromino();
-                    currentShapeIndex = nextShapeIndex;
-                    nextShapeIndex++;
-                    if(nextShapeIndex > 6){
-                        //generate a new random set
-                        random_shuffle(pieceBag.begin(), pieceBag.end());
-                        nextShapeIndex = 0;
-                    }
+                    currentShape = nextShape;
+                    nextShape = GetRandomValue(1,7);
 
-                    new(&movingPiece) tetromino(Shape(pieceBag[currentShapeIndex]), playfield);
+                    new(&movingPiece) tetromino(Shape(currentShape), playfield);
                     //check if new piece is overlapping and set game over
                     coordinates = movingPiece.publishCoordinates();
                     for(auto & coord : coordinates){
@@ -207,41 +198,84 @@ int main() {
         }
         //moving piece
         for(auto &coordinate : movingPiece.publishCoordinates()){
-            renderSquare(coordinate, ColorTable[pieceBag[currentShapeIndex]]);
+            renderSquare(coordinate, ColorTable[currentShape]);
         }
         DrawText("SCORE", 325, 15, 20, WHITE);
         DrawText(to_string(score).c_str(), 270, 40, 30, WHITE);
         DrawText("LEVEL", 325, 80, 20, WHITE);
         DrawText(to_string(level).c_str(), 270, 105, 30, WHITE);
-        /*DrawText("Singles", 300, 145, 20, WHITE);
-        DrawText(to_string(singles).c_str(), 270, 170, 20, WHITE);
-        DrawText("Doubles", 300, 220, 20, WHITE);
-        DrawText(to_string(doubles).c_str(), 270, 245, 20, WHITE);
-        DrawText("Triples", 300, 285, 20, WHITE);
-        DrawText(to_string(doubles).c_str(), 270, 310, 20, WHITE);*/
-        //draw next piece
-        DrawText("NEXT", 270, 370, 40, WHITE);
-        switch(pieceBag[nextShapeIndex]){
-            case 1:
-                renderSquare(make_pair(11,17),ColorTable[1]);
-                renderSquare(make_pair(12,17),ColorTable[1]);
-                renderSquare(make_pair(13,17),ColorTable[1]);
-                renderSquare(make_pair(14,17),ColorTable[1]);
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 5:
-                break;
-            case 6:
-                break;
-            case 7:
-                break;
+        DrawText("LINES", 325, 145, 20, WHITE);
+        DrawText(to_string(singles + doubles + triples + tetris).c_str(), 270, 170, 30, WHITE);
+        DrawText("x1:", 270, 220, 20, WHITE);
+        DrawText(to_string(singles).c_str(), 310, 220, 20, WHITE);
+        DrawText("x2:", 270, 250, 20, WHITE);
+        DrawText(to_string(doubles).c_str(), 310, 250, 20, WHITE);
+        DrawText("x3:", 270, 280, 20, WHITE);
+        DrawText(to_string(triples).c_str(), 310, 280, 20, WHITE);
+        DrawText("x4:", 270, 310, 20, WHITE);
+        DrawText(to_string(tetris).c_str(), 310, 310, 20, WHITE);
 
+
+        //draw next piece
+        if(!gameOver){
+            DrawText("NEXT", 270, 370, 40, WHITE);
+            switch(nextShape){
+                //I
+                case 1:
+                    renderSquare(make_pair(11,17),ColorTable[1]);
+                    renderSquare(make_pair(12,17),ColorTable[1]);
+                    renderSquare(make_pair(13,17),ColorTable[1]);
+                    renderSquare(make_pair(14,17),ColorTable[1]);
+                    break;
+                    //O
+                case 2:
+                    renderSquare(make_pair(11,17),ColorTable[2]);
+                    renderSquare(make_pair(12,17),ColorTable[2]);
+                    renderSquare(make_pair(11,18),ColorTable[2]);
+                    renderSquare(make_pair(12,18),ColorTable[2]);
+                    break;
+                    //T
+                case 3:
+                    renderSquare(make_pair(11,17),ColorTable[3]);
+                    renderSquare(make_pair(12,17),ColorTable[3]);
+                    renderSquare(make_pair(13,17),ColorTable[3]);
+                    renderSquare(make_pair(12,18),ColorTable[3]);
+                    break;
+                    //J
+                case 4:
+                    renderSquare(make_pair(11,17),ColorTable[4]);
+                    renderSquare(make_pair(11,18),ColorTable[4]);
+                    renderSquare(make_pair(12,18),ColorTable[4]);
+                    renderSquare(make_pair(13,18),ColorTable[4]);
+                    break;
+                    //L
+                case 5:
+                    renderSquare(make_pair(13,17),ColorTable[5]);
+                    renderSquare(make_pair(11,18),ColorTable[5]);
+                    renderSquare(make_pair(12,18),ColorTable[5]);
+                    renderSquare(make_pair(13,18),ColorTable[5]);
+                    break;
+                    //S
+                case 6:
+                    renderSquare(make_pair(12,17),ColorTable[6]);
+                    renderSquare(make_pair(13,17),ColorTable[6]);
+                    renderSquare(make_pair(11,18),ColorTable[6]);
+                    renderSquare(make_pair(12,18),ColorTable[6]);
+                    break;
+                case 7:
+                    renderSquare(make_pair(11,17),ColorTable[7]);
+                    renderSquare(make_pair(12,17),ColorTable[7]);
+                    renderSquare(make_pair(12,18),ColorTable[7]);
+                    renderSquare(make_pair(13,18),ColorTable[7]);
+                    break;
+
+            }
         }
+        else{
+            DrawText("GAME", 270, 370, 40, WHITE);
+            DrawText("OVER", 270, 420, 40, WHITE);
+        }
+
 
 
         EndDrawing();
