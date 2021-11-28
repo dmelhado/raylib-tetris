@@ -1,7 +1,6 @@
 #include <raylib.h>
 #include <random>
 #include <vector>
-#include <algorithm>
 
 #include "tetromino.h"
 
@@ -24,6 +23,12 @@ void eraseLine(vector<vector<int>> &playfield, int line) {
     }
 }
 
+//modify this function to adjust level speed
+//should avoid using expensive functions
+int levelGravity(int level){
+    return max(-int(22 * cbrt(level + 1)) + 69, 1);
+}
+
 int main() {
 
     InitWindow(400, 515, "Raylib Tetris");
@@ -36,9 +41,10 @@ int main() {
     const int boardWidth = 10;
     const int boardHeight = 20;
 
-    int framesPerLine = 48;
+    //measured in frames per line. the smaller, the faster
+    int gravity = 48;
 
-    double ticksPerSecond = double(gameFps) / double(framesPerLine);
+    double ticksPerSecond = double(gameFps) / double(gravity);
     double tickTime = 1 / ticksPerSecond;
 
     //delayed auto shift
@@ -71,19 +77,19 @@ int main() {
         if (!gameOver) {
 
             if (IsKeyDown(KEY_DOWN)) {
-                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0) {
+                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 3 == 0) {
                     movingPiece.move(DOWN);
                 }
                 DAS_Counter++;
             }
             if (IsKeyDown(KEY_LEFT)) {
-                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0) {
+                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 3 == 0) {
                     movingPiece.move(LEFT);
                 }
                 DAS_Counter++;
             }
             if (IsKeyDown(KEY_RIGHT)) {
-                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 6 == 0) {
+                if (DAS_Counter == 0 || DAS_Counter >= 16 && (DAS_Counter - 16) % 3 == 0) {
                     movingPiece.move(RIGHT);
                 }
                 DAS_Counter++;
@@ -170,8 +176,8 @@ int main() {
                     //set level and speed
                     if (completeLines != 0) {
                         level = lines / 10;
-                        framesPerLine = max(-int(22 * cbrt(level + 1)) + 69, 1);
-                        ticksPerSecond = double(gameFps) / double(framesPerLine);
+                        gravity = levelGravity(level);
+                        ticksPerSecond = double(gameFps) / double(gravity);
                     }
 
                     //prepare a new moving piece
