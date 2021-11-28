@@ -142,6 +142,7 @@ tetromino::tetromino(Shape shape, const vector<vector<int>> &playfield) {
 }
 
 //destructor
+//not using weird structures so the default destructor is enough
 tetromino::~tetromino() = default;
 
 void tetromino::move(Movement mov) {
@@ -186,7 +187,11 @@ bool tetromino::_validPiece(int rotationPos, int xPos, int yPos) {
         int cX = coordinate.first;
         int cY = coordinate.second;
         //inside bounds
-        if (cX < 0 || cX >= playfieldReference.size()) {
+        if (cX < 0 || cX >= int(playfieldReference.size())) {
+            res = false;
+            break;
+        }
+        if (cY >= int(playfieldReference[0].size())){
             res = false;
             break;
         }

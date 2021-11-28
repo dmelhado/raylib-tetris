@@ -170,9 +170,11 @@ int main() {
                             break;
                     }
                     //set level and speed
-                    level = lines / 10;
-                    framesPerLine = 48 - int(31 * log(level + 1 ) / log(16));
-                    ticksPerSecond = double(gameFps) / double(framesPerLine);
+                    if(completeLines != 0){
+                        level = lines / 10;
+                        framesPerLine = max(48 - int(31 * log(level + 1 ) / log(16)),1);
+                        ticksPerSecond = double(gameFps) / double(framesPerLine);
+                    }
 
                     //prepare a new moving piece
                     movingPiece.~tetromino();
