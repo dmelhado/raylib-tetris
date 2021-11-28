@@ -70,7 +70,7 @@ int main() {
                 movingPiece.move(RIGHT);
             }
             if(IsKeyPressed(KEY_UP)){
-                movingPiece.rotate();
+                movingPiece.rotate(1);
             }
 
             if(tickTime < 0){

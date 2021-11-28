@@ -17,18 +17,19 @@ class tetromino {
 public:
     tetromino(Shape shape, const vector<vector<int>>& playfield);
     ~tetromino();
-    void rotate();
+    void rotate(int spin);
     void move(Movement mov);
     vector<pair<int,int>> publishCoordinates();
 
 private:
-    bool _validPiece(vector<vector<int>> &piece, int xPos, int yPos);
+    bool _validPiece(int rotationPos, int xPos, int yPos);
     static vector<pair<int,int>> _calculateCoordinates(int xPos, int yPos, vector<vector<int>> &piece);
-    vector<vector<int>> _giveRotation();
 
     int _xPos;
     int _yPos;
-    vector<vector<int>> _box;
+    vector<vector<vector<int>>> _Piece;
+    int _rotation;
+    int _pieceRotations;
     vector<vector<int>> playfieldReference;
 
 };
